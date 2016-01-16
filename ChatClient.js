@@ -2,12 +2,12 @@
 
 const EventEmitter =  require('events').EventEmitter;
 const inherits     =  require('util').inherits;
-const debug        =  require('debug')('shiba:webclient');
-const debugchat    =  require('debug')('shiba:chat');
+const debug        =  require('debug')('babot:webclient');
+const debugchat    =  require('debug')('babot:chat');
 
-module.exports = WebClient;
+module.exports = ChatClient;
 
-function WebClient(config) {
+function ChatClient(config) {
     EventEmitter.call(this);
 
     // Save configuration and stuff.
@@ -24,9 +24,9 @@ function WebClient(config) {
     //this.socket.on('join', this.onJoin.bind(this));
 }
 
-inherits(WebClient, EventEmitter);
+inherits(ChatClient, EventEmitter);
 
-WebClient.prototype.onMsg = function(msg) {
+ChatClient.prototype.onMsg = function(msg) {
     debugchat('Msg: %s', JSON.stringify(msg));
 
     if(!msg.channelName)
@@ -35,22 +35,22 @@ WebClient.prototype.onMsg = function(msg) {
     this.emit('msg', msg);
 };
 
-WebClient.prototype.onError = function(err) {
+ChatClient.prototype.onError = function(err) {
     console.error('webclient onError: ', err);
 };
 
-WebClient.prototype.onErr = function(err) {
+ChatClient.prototype.onErr = function(err) {
     console.error('webclient onErr: ', err);
 };
 
-WebClient.prototype.onConnect = function(data) {
+ChatClient.prototype.onConnect = function(data) {
     debug("Web Server Connected.");
 
     //self.emit('webclient-connect');
     this.socket.emit('join', 'all', this.onJoin.bind(this));
 };
 
-WebClient.prototype.onJoin = function(err, data) { //{ data.username, data.moderator, data.channels }
+ChatClient.prototype.onJoin = function(err, data) { //{ data.username, data.moderator, data.channels }
     console.log('Chat joined');
 
     var allChanData = {
@@ -62,7 +62,7 @@ WebClient.prototype.onJoin = function(err, data) { //{ data.username, data.moder
     this.emit('join', allChanData);
 };
 
-WebClient.prototype.doSay = function(line, channelName) {
+ChatClient.prototype.doSay = function(line, channelName) {
     debugchat('Saying: %s', line);
 
     this.socket.emit('say', line, channelName, true, function(err) {
@@ -71,12 +71,12 @@ WebClient.prototype.doSay = function(line, channelName) {
     });
 };
 
-WebClient.prototype.onDisconnect = function(data) {
+ChatClient.prototype.onDisconnect = function(data) {
     debug('Web client disconnected |', data, '|', typeof data);
     this.emit('disconnect');
 };
 
-WebClient.prototype.doMute = function(user, timespec, channelName) {
+ChatClient.prototype.doMute = function(user, timespec, channelName) {
   debugchat('Muting user: %s time: %s', user, timespec);
   let line = '/mute ' + user;
   if (timespec) line = line + ' ' + timespec;
